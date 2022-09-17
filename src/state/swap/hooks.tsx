@@ -75,6 +75,14 @@ const BAD_RECIPIENT_ADDRESSES: { [address: string]: true } = {
   '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D': true, // v2 router 02
 }
 
+// ETH
+// const ZEON_ADDRESS = '0xE5B826Ca2Ca02F09c1725e9bd98d9a8874C30532'
+// const USDT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
+
+// Polygon
+const ZEON_ADDRESS = '0x8a3597943441bdd90fA8e998ED4042b465ea3239'
+const USDT_ADDRESS = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'
+
 // from the current swap inputs, compute the best trade and return it.
 export function useDerivedSwapInfo(): {
   currencies: { [field in Field]?: Currency | null }
@@ -97,7 +105,13 @@ export function useDerivedSwapInfo(): {
     recipient,
   } = useSwapState()
 
-  const inputCurrency = useCurrency(inputCurrencyId)
+  let customInputCurrencyId
+  if (outputCurrencyId === ZEON_ADDRESS) {
+    customInputCurrencyId = USDT_ADDRESS
+  } else {
+    customInputCurrencyId = inputCurrencyId
+  }
+  const inputCurrency = useCurrency(customInputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
   const recipientLookup = useENS(recipient ?? undefined)
   const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null

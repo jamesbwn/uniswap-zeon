@@ -9,6 +9,8 @@ import NonfungiblePositionManagerJson from '@uniswap/v3-periphery/artifacts/cont
 import V3MigratorJson from '@uniswap/v3-periphery/artifacts/contracts/V3Migrator.sol/V3Migrator.json'
 import { useWeb3React } from '@web3-react/core'
 import ARGENT_WALLET_DETECTOR_ABI from 'abis/argent-wallet-detector.json'
+import ZeonSaleABI from 'abis/zeonSale.json'
+
 import EIP_2612 from 'abis/eip_2612.json'
 import ENS_PUBLIC_RESOLVER_ABI from 'abis/ens-public-resolver.json'
 import ENS_ABI from 'abis/ens-registrar.json'
@@ -27,6 +29,9 @@ import {
   TICK_LENS_ADDRESSES,
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
+  ZEON_SALE_ADDRESS,
+  ZEON_ADDRESS,
+  USDT_ADDRESS_V1,
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
@@ -141,3 +146,20 @@ export function useTickLens(): TickLens | null {
   const address = chainId ? TICK_LENS_ADDRESSES[chainId] : undefined
   return useContract(address, TickLensABI) as TickLens | null
 }
+
+export function useZeonSaleContract(): Contract | null {
+  const { chainId } = useWeb3React()
+  const address = chainId ? ZEON_SALE_ADDRESS[chainId] : undefined
+  return useContract(address, ZeonSaleABI, true)
+}
+
+export function useUsdtContract(): Contract | null {
+  return useContract(USDT_ADDRESS_V1, ERC20_ABI, true)
+}
+
+export function useZeonContract(): Contract | null {
+  const { chainId } = useWeb3React()
+  const address = chainId ? ZEON_ADDRESS[chainId] : undefined
+  return useContract(address, ZeonSaleABI, true)
+}
+

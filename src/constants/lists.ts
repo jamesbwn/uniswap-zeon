@@ -17,6 +17,7 @@ export const CELO_LIST = 'https://celo-org.github.io/celo-token-list/celo.tokenl
 
 export const UNSUPPORTED_LIST_URLS: string[] = [BA_LIST]
 
+
 // this is the default list of lists that are exposed to users
 // lower index == higher priority for token import
 const DEFAULT_LIST_OF_LISTS_TO_DISPLAY: string[] = [

@@ -11,6 +11,8 @@ export const UNI_ADDRESS: AddressMap = constructSameAddressMap('0x1f9840a85d5aF5
 export const V2_FACTORY_ADDRESSES: AddressMap = constructSameAddressMap(V2_FACTORY_ADDRESS)
 export const V2_ROUTER_ADDRESS: AddressMap = constructSameAddressMap('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D')
 
+// export const ZEON_SALE_ADDRESS: AddressMap = constructSameAddressMap('0x15cA3A5D8635D2Dd48aaFA0B45E585eA559a8396')
+
 // celo v3 addresses
 const CELO_V3_CORE_FACTORY_ADDRESSES = '0xAfE208a311B21f13EF87E33A90049fC17A7acDEc'
 const CELO_ROUTER_ADDRESS = '0x5615CDAb10dc425a742d643d949a7F474C01abc4'
@@ -143,3 +145,21 @@ export const TICK_LENS_ADDRESSES: AddressMap = {
   [SupportedChainId.CELO]: CELO_TICK_LENS_ADDRESSES,
   [SupportedChainId.CELO_ALFAJORES]: CELO_TICK_LENS_ADDRESSES,
 }
+
+export const ZEON_SALE_ADDRESS: AddressMap = {
+  [SupportedChainId.MAINNET]: '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8',
+  [SupportedChainId.POLYGON]: '0x15cA3A5D8635D2Dd48aaFA0B45E585eA559a8396',
+}
+
+export const ZEON_ADDRESS: AddressMap = {
+  [SupportedChainId.MAINNET]: '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8',
+  [SupportedChainId.POLYGON]: '0x8a3597943441bdd90fA8e998ED4042b465ea3239',
+}
+
+export const USDT_ADDRESS: AddressMap = {
+  [SupportedChainId.MAINNET]: '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8',
+  [SupportedChainId.POLYGON]: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+}
+
+export const ZEON_SALE_ADDRESS_V1 = '0x15cA3A5D8635D2Dd48aaFA0B45E585eA559a8396'
+export const USDT_ADDRESS_V1 = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'

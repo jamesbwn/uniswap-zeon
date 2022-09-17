@@ -67,7 +67,7 @@ const Container = styled.div<{ hideInput: boolean; disabled: boolean; redesignFl
   `}
 `
 
-const CurrencySelect = styled(ButtonGray)<{
+const CurrencySelect = styled(ButtonGray) <{
   visible: boolean
   selected: boolean
   hideInput?: boolean
@@ -81,8 +81,8 @@ const CurrencySelect = styled(ButtonGray)<{
         ? theme.backgroundSurface
         : theme.accentAction
       : selected
-      ? theme.deprecated_bg2
-      : theme.deprecated_primary1};
+        ? theme.deprecated_bg2
+        : theme.deprecated_primary1};
   opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
   box-shadow: ${({ selected }) => (selected ? 'none' : '0px 6px 10px rgba(0, 0, 0, 0.075)')};
   color: ${({ selected, theme }) => (selected ? theme.deprecated_text1 : theme.deprecated_white)};
@@ -103,25 +103,25 @@ const CurrencySelect = styled(ButtonGray)<{
   :focus,
   :hover {
     background-color: ${({ selected, theme, redesignFlag }) =>
-      selected
-        ? redesignFlag
-          ? theme.backgroundSurface
-          : theme.deprecated_bg3
-        : darken(0.05, theme.deprecated_primary1)};
+    selected
+      ? redesignFlag
+        ? theme.backgroundSurface
+        : theme.deprecated_bg3
+      : darken(0.05, theme.deprecated_primary1)};
   }
   visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
 `
-const InputCurrencySelect = styled(CurrencySelect)<{ redesignFlag: boolean }>`
+const InputCurrencySelect = styled(CurrencySelect) <{ redesignFlag: boolean }>`
   background-color: ${({ theme, selected, redesignFlag }) =>
     redesignFlag && (selected ? theme.backgroundModule : theme.accentAction)};
   :focus,
   :hover {
     background-color: ${({ selected, theme, redesignFlag }) =>
-      selected
-        ? redesignFlag
-          ? theme.backgroundInteractive
-          : theme.deprecated_bg3
-        : darken(0.05, theme.deprecated_primary1)};
+    selected
+      ? redesignFlag
+        ? theme.backgroundInteractive
+        : theme.deprecated_bg3
+      : darken(0.05, theme.deprecated_primary1)};
   }
 `
 
@@ -147,7 +147,7 @@ const LabelRow = styled.div`
   }
 `
 
-const FiatRow = styled(LabelRow)<{ redesignFlag: boolean }>`
+const FiatRow = styled(LabelRow) <{ redesignFlag: boolean }>`
   justify-content: flex-end;
   min-height: ${({ redesignFlag }) => redesignFlag && '32px'};
   padding: ${({ redesignFlag }) => redesignFlag && '8px 0px'};
@@ -173,7 +173,7 @@ const Aligner = styled.span`
   width: 100%;
 `
 
-const StyledDropDown = styled(DropDown)<{ selected: boolean; redesignFlag: boolean }>`
+const StyledDropDown = styled(DropDown) <{ selected: boolean; redesignFlag: boolean }>`
   margin: 0 0.25rem 0 0.35rem;
   height: 35%;
   margin-left: ${({ redesignFlag }) => redesignFlag && '8px'};
@@ -214,7 +214,7 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean; redesignFlag: boole
   }
 `
 
-const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean; redesignFlag: boolean }>`
+const StyledNumericalInput = styled(NumericalInput) <{ $loading: boolean; redesignFlag: boolean }>`
   ${loadingOpacityMixin};
   text-align: left;
   font-variant: ${({ redesignFlag }) => redesignFlag && 'small-caps'};
@@ -344,8 +344,8 @@ export default function SwapCurrencyInputPanel({
                   >
                     {(currency && currency.symbol && currency.symbol.length > 20
                       ? currency.symbol.slice(0, 4) +
-                        '...' +
-                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      '...' +
+                      currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
                       : currency?.symbol) || <Trans>Select token</Trans>}
                   </StyledTokenName>
                 )}

@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTokenContract, useUsdtContract, useZeonContract, useZeonSaleContract } from './useContract'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { USDT, ZEON_MAINNET } from 'constants/tokens'
+import useRefresh from './useRefresh'
 
 // returns undefined if input token is undefined, or fails to get token contract,
 // or contract total supply cannot be fetched
@@ -77,6 +78,7 @@ export function useUSDTAllowance() {
   const usdtAddress = USDT.address
   const zeonSaleAddress = ZEON_SALE_ADDRESS_V1
   const usdtContract = useTokenContract(usdtAddress, true);
+  const {slowRefresh}= useRefresh()
   useEffect(() => {
     async function fetchData() {
       if(usdtContract && account) {
@@ -85,7 +87,7 @@ export function useUSDTAllowance() {
       }
     }
     fetchData()
-  }, [usdtContract, zeonSaleAddress, account])
+  }, [usdtContract, zeonSaleAddress, account, slowRefresh])
 
   return allow
 }

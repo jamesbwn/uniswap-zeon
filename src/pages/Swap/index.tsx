@@ -313,7 +313,6 @@ export default function Swap() {
   const remaining = useZeonRemain();
 
   const allowBN = useUSDTAllowance()
-  console.log('debug allow', allowBN)
   const mintBN = Math.pow(10, 6) * parseFloat(formattedAmounts[Field.INPUT])
   const [handleMint] = useMintCallback(mintBN.toString())
   // const [handleApproveUSDT] = useUSDTApproveCallback()

@@ -5,8 +5,9 @@ import { useWeb3React } from '@web3-react/core'
 import { sendAnalyticsEvent } from 'components/AmplitudeAnalytics'
 import { EventName } from 'components/AmplitudeAnalytics/constants'
 import { getTokenAddress } from 'components/AmplitudeAnalytics/utils'
+import { USDT_POLYGON, ZEON_POLYGON } from 'constants/tokens'
 import { useTokenContract } from 'hooks/useContract'
-import { useTokenAllowance } from 'hooks/useTokenAllowance'
+import { useTokenAllowance, useTokenAllowanceCustom } from 'hooks/useTokenAllowance'
 import { useCallback, useMemo } from 'react'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 
@@ -43,6 +44,30 @@ function useApprovalStateForSpender(
   }, [amountToApprove, currentAllowance, pendingApproval, spender])
 }
 
+
+function useApprovalStateForSpenderCustom(
+  amountToApprove: string | undefined,
+  spender: string | undefined,
+  useIsPendingApproval: (token?: Token, spender?: string) => boolean
+): ApprovalState {
+  const { account } = useWeb3React()
+  
+  const token = USDT_POLYGON;
+  const currentAllowance = useTokenAllowanceCustom(token, account ?? undefined, spender)
+  const pendingApproval = useIsPendingApproval(token, spender)
+  return useMemo(() => {
+    if (!amountToApprove || !spender) return ApprovalState.UNKNOWN
+    if (!currentAllowance) return ApprovalState.UNKNOWN
+
+    // amountToApprove will be defined if currentAllowance is
+    return parseFloat (currentAllowance) <  parseFloat(amountToApprove)
+      ? pendingApproval
+        ? ApprovalState.PENDING
+        : ApprovalState.NOT_APPROVED
+      : ApprovalState.APPROVED
+  }, [amountToApprove, currentAllowance, pendingApproval, spender])
+}
+
 export function useApproval(
   amountToApprove: CurrencyAmount<Currency> | undefined,
   spender: string | undefined,
@@ -53,7 +78,6 @@ export function useApproval(
 ] {
   const { chainId } = useWeb3React()
   const token = amountToApprove?.currency?.isToken ? amountToApprove.currency : undefined
-
   // check the current approval status
   const approvalState = useApprovalStateForSpender(amountToApprove, spender, useIsPendingApproval)
 
@@ -89,6 +113,76 @@ export function useApproval(
 
     return tokenContract
       .approve(spender, useExact ? amountToApprove.quotient.toString() : MaxUint256, {
+        gasLimit: calculateGasMargin(estimatedGas),
+      })
+      .then((response) => {
+        const eventProperties = {
+          chain_id: chainId,
+          token_symbol: token?.symbol,
+          token_address: getTokenAddress(token),
+        }
+        sendAnalyticsEvent(EventName.APPROVE_TOKEN_TXN_SUBMITTED, eventProperties)
+        return {
+          response,
+          tokenAddress: token.address,
+          spenderAddress: spender,
+        }
+      })
+      .catch((error: Error) => {
+        logFailure(error)
+        throw error
+      })
+  }, [approvalState, token, tokenContract, amountToApprove, spender, chainId])
+
+  return [approvalState, approve]
+}
+
+export function useApprovalCustom(
+  amountToApprove: string | undefined,
+  spender: string | undefined,
+  useIsPendingApproval: (token?: Token, spender?: string) => boolean
+): [
+  ApprovalState,
+  () => Promise<{ response: TransactionResponse; tokenAddress: string; spenderAddress: string } | undefined>
+] {
+  const { chainId } = useWeb3React()
+  const token = USDT_POLYGON;
+  
+  // check the current approval status
+  const approvalState = useApprovalStateForSpenderCustom(amountToApprove, spender, useIsPendingApproval)
+
+  const tokenContract = useTokenContract(token?.address)
+
+  const approve = useCallback(async () => {
+    function logFailure(error: Error | string): undefined {
+      console.warn(`${token?.symbol || 'Token'} approval failed:`, error)
+      return
+    }
+
+    // Bail early if there is an issue.
+    if (approvalState !== ApprovalState.NOT_APPROVED) {
+      return logFailure('approve was called unnecessarily')
+    } else if (!chainId) {
+      return logFailure('no chainId')
+    } else if (!token) {
+      return logFailure('no token')
+    } else if (!tokenContract) {
+      return logFailure('tokenContract is null')
+    } else if (!amountToApprove) {
+      return logFailure('missing amount to approve')
+    } else if (!spender) {
+      return logFailure('no spender')
+    }
+
+    let useExact = false
+    const estimatedGas = await tokenContract.estimateGas.approve(spender, MaxUint256).catch(() => {
+      // general fallback for tokens which restrict approval amounts
+      useExact = true
+      return tokenContract.estimateGas.approve(spender, amountToApprove)
+    })
+
+    return tokenContract
+      .approve(spender, useExact ? amountToApprove : MaxUint256, {
         gasLimit: calculateGasMargin(estimatedGas),
       })
       .then((response) => {

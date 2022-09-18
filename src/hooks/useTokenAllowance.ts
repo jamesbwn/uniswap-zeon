@@ -15,3 +15,34 @@ export function useTokenAllowance(token?: Token, owner?: string, spender?: strin
     [token, allowance]
   )
 }
+
+export function useTokenAllowanceCustom(token?: Token, owner?: string, spender?: string): string | undefined {
+  const contract = useTokenContract(token?.address, false)
+
+  const inputs = useMemo(() => [owner, spender], [owner, spender])
+  const allowance = useSingleCallResult(contract, 'allowance', inputs).result
+
+  return useMemo(
+    () => (token && allowance ? allowance.toString() : undefined),
+    [token, allowance]
+  )
+}
+
+// export function useUSDTAllowance() {
+//   const [allow, setAllow] = useState(BigNumber.from(0))
+//   const { chainId, account} = useWeb3React()
+//   const usdtAddress = chainId ? USDT_ADDRESS[chainId] : undefined
+//   const zeonSaleAddress = chainId ? ZEON_SALE_ADDRESS[chainId] : undefined
+//   const usdtContract = useTokenContract(usdtAddress, true);
+//   useEffect(() => {
+//     async function fetchData() {
+//       if(usdtContract && account && zeonSaleAddress) {
+//         const data = await usdtContract.allowance(account, zeonSaleAddress)
+//         setAllow(data)
+//       }
+//     }
+//     fetchData()
+//   }, [usdtContract, zeonSaleAddress, account])
+
+//   return allow
+// }

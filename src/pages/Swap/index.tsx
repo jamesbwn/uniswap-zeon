@@ -52,9 +52,9 @@ import { ArrowWrapper, PageWrapper, SwapCallbackError, SwapWrapper } from '../..
 import SwapHeader from '../../components/swap/SwapHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import TokenWarningModal from '../../components/TokenWarningModal'
-import { TOKEN_SHORTHANDS } from '../../constants/tokens'
+import { TOKEN_SHORTHANDS, ZEON_POLYGON } from '../../constants/tokens'
 import { useAllTokens, useCurrency } from '../../hooks/Tokens'
-import { ApprovalState, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback'
+import { ApprovalState, useApproveCallbackCustom, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback'
 import useENSAddress from '../../hooks/useENSAddress'
 import { useERC20PermitFromTrade, UseERC20PermitState } from '../../hooks/useERC20Permit'
 import useIsArgentWallet from '../../hooks/useIsArgentWallet'
@@ -74,6 +74,8 @@ import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceIm
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from '../../utils/prices'
 import { supportedChainId } from '../../utils/supportedChainId'
+import { useApprovalCustom } from 'lib/hooks/useApproval'
+import { ZEON_SALE_ADDRESS_V1 } from 'constants/addresses'
 
 const ArrowContainer = styled.div`
   display: inline-block;
@@ -163,7 +165,9 @@ export default function Swap() {
   const loadedUrlParams = useDefaultsFromURLSearch()
   const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
+
   const rate = useZeonRate();
+
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
@@ -305,8 +309,17 @@ export default function Swap() {
     currencies[Field.INPUT] && currencies[Field.OUTPUT] && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
   )
 
+  const isZeon = currencies[Field.OUTPUT]?.wrapped.address === ZEON_POLYGON.address
+  const remaining = useZeonRemain();
+
+  const allowBN = useUSDTAllowance()
+  const mintBN = Math.pow(10, 6) * parseFloat(formattedAmounts[Field.INPUT])
+  const [handleMint] = useMintCallback(mintBN.toString())
+  // const [handleApproveUSDT] = useUSDTApproveCallback()
+
   // check whether the user has approved the router on the input token
   const [approvalState, approveCallback] = useApproveCallbackFromTrade(trade, allowedSlippage)
+  const [approvalStateCustom, approveCallbackCustom] = useApproveCallbackCustom(mintBN?.toString(), ZEON_SALE_ADDRESS_V1)
   const transactionDeadline = useTransactionDeadline()
   const {
     state: signatureState,
@@ -334,6 +347,27 @@ export default function Swap() {
       })
     }
   }, [signatureState, gatherPermitSignature, approveCallback, trade?.inputAmount?.currency.symbol])
+
+  const handleApproveCustom = useCallback(async () => {
+    if (signatureState === UseERC20PermitState.NOT_SIGNED && gatherPermitSignature) {
+      try {
+        await gatherPermitSignature()
+      } catch (error) {
+        // try to approve if gatherPermitSignature failed for any reason other than the user rejecting it
+        if (error?.code !== 4001) {
+          await approveCallbackCustom()
+        }
+      }
+    } else {
+      await approveCallbackCustom()
+
+      sendEvent({
+        category: 'Swap',
+        action: 'Approve',
+        label: [TRADE_STRING, trade?.inputAmount?.currency.symbol].join('/'),
+      })
+    }
+  }, [signatureState, gatherPermitSignature, approveCallbackCustom, trade?.inputAmount?.currency.symbol])
 
   // check if user has gone through approval process, used to show two step buttons, reset on token change
   const [approvalSubmitted, setApprovalSubmitted] = useState<boolean>(false)
@@ -505,16 +539,8 @@ export default function Swap() {
   const approveTokenButtonDisabled =
     approvalState !== ApprovalState.NOT_APPROVED || approvalSubmitted || signatureState === UseERC20PermitState.SIGNED
 
-
-  // const ZEON_ADDRESS = '0xE5B826Ca2Ca02F09c1725e9bd98d9a8874C30532' // ETH
-  const ZEON_ADDRESS = '0x8a3597943441bdd90fA8e998ED4042b465ea3239' // Polygon
-  const isZeon = currencies[Field.OUTPUT]?.wrapped.address === ZEON_ADDRESS
-  const remaining = useZeonRemain();
-
-  const allowBN = useUSDTAllowance()
-  const mintBN = Math.pow(10, 6) * parseFloat(formattedAmounts[Field.INPUT])
-  const [handleMint] = useMintCallback(mintBN.toString())
-  const [handleApproveUSDT] = useUSDTApproveCallback()
+  const approveButtonCustomDisabled =
+    approvalStateCustom !== ApprovalState.NOT_APPROVED
   return (
     <Trace page={PageName.SWAP_PAGE} shouldLogImpression>
       <>
@@ -833,7 +859,7 @@ export default function Swap() {
                       {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
                     </div>
                   ) : !allowBN.gt(BigNumber.from(0)) ? (
-                    <ButtonPrimary onClick={handleApproveUSDT} > Approve USDT </ButtonPrimary>
+                    <ButtonPrimary onClick={handleApproveCustom} > Approve USDT </ButtonPrimary>
                   ) : (
                     <ButtonPrimary onClick={handleMint} >Swap</ButtonPrimary>
                   )

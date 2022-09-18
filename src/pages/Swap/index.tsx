@@ -52,7 +52,7 @@ import { ArrowWrapper, PageWrapper, SwapCallbackError, SwapWrapper } from '../..
 import SwapHeader from '../../components/swap/SwapHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import TokenWarningModal from '../../components/TokenWarningModal'
-import { TOKEN_SHORTHANDS, ZEON_POLYGON } from '../../constants/tokens'
+import { TOKEN_SHORTHANDS, ZEON_MAINNET, ZEON_POLYGON } from '../../constants/tokens'
 import { useAllTokens, useCurrency } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallbackCustom, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback'
 import useENSAddress from '../../hooks/useENSAddress'
@@ -166,7 +166,7 @@ export default function Swap() {
   const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
 
-  const rate = useZeonRate();
+  const rate = useZeonRate()?.div(1000);
 
 
   // token warning stuff
@@ -309,17 +309,18 @@ export default function Swap() {
     currencies[Field.INPUT] && currencies[Field.OUTPUT] && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
   )
 
-  const isZeon = currencies[Field.OUTPUT]?.wrapped.address === ZEON_POLYGON.address
+  const isZeon = currencies[Field.OUTPUT]?.wrapped.address === ZEON_MAINNET.address
   const remaining = useZeonRemain();
 
   const allowBN = useUSDTAllowance()
+  console.log('debug allow', allowBN)
   const mintBN = Math.pow(10, 6) * parseFloat(formattedAmounts[Field.INPUT])
   const [handleMint] = useMintCallback(mintBN.toString())
   // const [handleApproveUSDT] = useUSDTApproveCallback()
 
   // check whether the user has approved the router on the input token
   const [approvalState, approveCallback] = useApproveCallbackFromTrade(trade, allowedSlippage)
-  const [approvalStateCustom, approveCallbackCustom] = useApproveCallbackCustom(mintBN?.toString(), ZEON_SALE_ADDRESS_V1)
+  const [approvalStateCustom, approveCallbackCustom] = useApproveCallbackCustom(ZEON_SALE_ADDRESS_V1)
   const transactionDeadline = useTransactionDeadline()
   const {
     state: signatureState,

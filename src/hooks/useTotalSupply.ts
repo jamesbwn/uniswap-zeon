@@ -1,6 +1,8 @@
 import { MaxUint256 } from '@ethersproject/constants'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
+import { sendAnalyticsEvent } from 'components/AmplitudeAnalytics'
+import { EventName } from 'components/AmplitudeAnalytics/constants'
 import { USDT_ADDRESS, USDT_ADDRESS_V1, ZEON_ADDRESS, ZEON_SALE_ADDRESS, ZEON_SALE_ADDRESS_V1 } from 'constants/addresses'
 import { BigNumber } from '@ethersproject/bignumber'
 import { useSingleCallResult } from 'lib/hooks/multicall'
@@ -8,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useTokenContract, useUsdtContract, useZeonContract, useZeonSaleContract } from './useContract'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { USDT, ZEON_MAINNET } from 'constants/tokens'
 
 // returns undefined if input token is undefined, or fails to get token contract,
 // or contract total supply cannot be fetched
@@ -52,16 +55,12 @@ export function useZeonRate() {
 
 export function useZeonRemain() {
   const [remain, setRemain] = useState(BigNumber.from(0))
-  const { chainId } = useWeb3React()
-  const zeonAddress = chainId ? ZEON_ADDRESS[chainId] : undefined
-  const zeonSaleAddress = chainId ? ZEON_SALE_ADDRESS[chainId] : undefined
+  const zeonAddress = ZEON_MAINNET.address
+  const zeonSaleAddress = ZEON_SALE_ADDRESS_V1
   const zeonContract = useTokenContract(zeonAddress, true);
   useEffect(() => {
     async function fetchData() {
-      let data
-      if(zeonSaleAddress) {
-        data = await zeonContract?.balanceOf(zeonSaleAddress)
-      }
+      const data = await zeonContract?.balanceOf(zeonSaleAddress)
       if(data) {
         setRemain(data)
       }
@@ -75,12 +74,12 @@ export function useZeonRemain() {
 export function useUSDTAllowance() {
   const [allow, setAllow] = useState(BigNumber.from(0))
   const { chainId, account} = useWeb3React()
-  const usdtAddress = chainId ? USDT_ADDRESS[chainId] : undefined
-  const zeonSaleAddress = chainId ? ZEON_SALE_ADDRESS[chainId] : undefined
+  const usdtAddress = USDT.address
+  const zeonSaleAddress = ZEON_SALE_ADDRESS_V1
   const usdtContract = useTokenContract(usdtAddress, true);
   useEffect(() => {
     async function fetchData() {
-      if(usdtContract && account && zeonSaleAddress) {
+      if(usdtContract && account) {
         const data = await usdtContract.allowance(account, zeonSaleAddress)
         setAllow(data)
       }
@@ -95,6 +94,7 @@ export function useMintCallback(
   _mintAmount?: string
 ): [() => Promise<void>] {
   const zeonSaleContract = useZeonSaleContract()
+  const { chainId } = useWeb3React()
   const setMint = useCallback(async (): Promise<void> => {
 
     if (!zeonSaleContract) {
@@ -115,6 +115,16 @@ export function useMintCallback(
     return zeonSaleContract
       .buy(_mintAmount,  {
         gasLimit: calculateGasMargin(estimatedGas),
+      })
+      .then(() => {
+        const eventProperties = {
+          chain_id: chainId,
+          token_address: zeonSaleContract?.address,
+        }
+        sendAnalyticsEvent(EventName.ZEON_SWAP_TXN_SUBMITTED, eventProperties)
+        return {
+          tokenAddress: zeonSaleContract?.address,
+        }
       })
       .catch((error: Error) => {
         console.debug('ZEON BUY::', error)

@@ -32,8 +32,9 @@ import {
   ZEON_SALE_ADDRESS,
   ZEON_ADDRESS,
   USDT_ADDRESS_V1,
+  ZEON_SALE_ADDRESS_V1,
 } from 'constants/addresses'
-import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
+import { WRAPPED_NATIVE_CURRENCY, ZEON_MAINNET } from 'constants/tokens'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
@@ -148,8 +149,7 @@ export function useTickLens(): TickLens | null {
 }
 
 export function useZeonSaleContract(): Contract | null {
-  const { chainId } = useWeb3React()
-  const address = chainId ? ZEON_SALE_ADDRESS[chainId] : undefined
+  const address = ZEON_SALE_ADDRESS_V1
   return useContract(address, ZeonSaleABI, true)
 }
 
@@ -158,8 +158,7 @@ export function useUsdtContract(): Contract | null {
 }
 
 export function useZeonContract(): Contract | null {
-  const { chainId } = useWeb3React()
-  const address = chainId ? ZEON_ADDRESS[chainId] : undefined
-  return useContract(address, ZeonSaleABI, true)
+  const address = ZEON_MAINNET.address
+  return useContract(address, ERC20_ABI, true)
 }
 

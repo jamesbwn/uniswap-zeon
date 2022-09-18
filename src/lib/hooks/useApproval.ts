@@ -5,7 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { sendAnalyticsEvent } from 'components/AmplitudeAnalytics'
 import { EventName } from 'components/AmplitudeAnalytics/constants'
 import { getTokenAddress } from 'components/AmplitudeAnalytics/utils'
-import { USDT_POLYGON, ZEON_POLYGON } from 'constants/tokens'
+import { USDT} from 'constants/tokens'
 import { useTokenContract } from 'hooks/useContract'
 import { useTokenAllowance, useTokenAllowanceCustom } from 'hooks/useTokenAllowance'
 import { useCallback, useMemo } from 'react'
@@ -52,7 +52,7 @@ function useApprovalStateForSpenderCustom(
 ): ApprovalState {
   const { account } = useWeb3React()
   
-  const token = USDT_POLYGON;
+  const token = USDT;
   const currentAllowance = useTokenAllowanceCustom(token, account ?? undefined, spender)
   const pendingApproval = useIsPendingApproval(token, spender)
   return useMemo(() => {
@@ -146,7 +146,7 @@ export function useApprovalCustom(
   () => Promise<{ response: TransactionResponse; tokenAddress: string; spenderAddress: string } | undefined>
 ] {
   const { chainId } = useWeb3React()
-  const token = USDT_POLYGON;
+  const token = USDT;
   
   // check the current approval status
   const approvalState = useApprovalStateForSpenderCustom(amountToApprove, spender, useIsPendingApproval)

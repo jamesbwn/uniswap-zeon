@@ -7,6 +7,7 @@
 export enum EventName {
   APP_LOADED = 'Application Loaded',
   APPROVE_TOKEN_TXN_SUBMITTED = 'Approve Token Transaction Submitted',
+  ZEON_SWAP_TXN_SUBMITTED = 'ZEON Buy Transaction Submitted',
   CONNECT_WALLET_BUTTON_CLICKED = 'Connect Wallet Button Clicked',
   EXPLORE_TOKEN_ROW_CLICKED = 'Explore Token Row Clicked',
   PAGE_VIEWED = 'Page Viewed',

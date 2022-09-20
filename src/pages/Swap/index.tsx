@@ -169,7 +169,6 @@ export default function Swap() {
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
 
   const rate = useZeonRate()?.div(1000);
-  console.log('debug rate', rate)
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [

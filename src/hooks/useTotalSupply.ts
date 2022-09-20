@@ -85,8 +85,8 @@ export function useUSDTAllowance() {
         setAllow(data)
       }
     }
+    console.log('debug refresh', fastRefresh)
     fetchData()
-    console.log('debug fast ref st2', fastRefresh)
 
   }, [usdtContract, zeonSaleAddress, account, fastRefresh])
 

@@ -52,7 +52,7 @@ import { ArrowWrapper, PageWrapper, SwapCallbackError, SwapWrapper } from '../..
 import SwapHeader from '../../components/swap/SwapHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import TokenWarningModal from '../../components/TokenWarningModal'
-import { TOKEN_SHORTHANDS, ZEON_MAINNET, ZEON_POLYGON } from '../../constants/tokens'
+import { TOKEN_SHORTHANDS, USDT, ZEON_MAINNET, ZEON_POLYGON } from '../../constants/tokens'
 import { useAllTokens, useCurrency } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallbackCustom, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback'
 import useENSAddress from '../../hooks/useENSAddress'
@@ -76,6 +76,8 @@ import { computeRealizedPriceImpact, warningSeverity } from '../../utils/prices'
 import { supportedChainId } from '../../utils/supportedChainId'
 import { useApprovalCustom } from 'lib/hooks/useApproval'
 import { ZEON_SALE_ADDRESS_V1 } from 'constants/addresses'
+import { useTokenContract } from 'hooks/useContract'
+import useRefresh from 'hooks/useRefresh'
 
 const ArrowContainer = styled.div`
   display: inline-block;
@@ -313,6 +315,21 @@ export default function Swap() {
   const remaining = useZeonRemain();
 
   const allowBN = useUSDTAllowance()
+  // const [allowBN, setAllow] = useState(BigNumber.from(0))
+  // const usdtAddress = USDT.address
+  // const zeonSaleAddress = ZEON_SALE_ADDRESS_V1
+  // const usdtContract = useTokenContract(usdtAddress, true);
+  // const { fastRefresh } = useRefresh()
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     if (usdtContract && account) {
+  //       const data = await usdtContract.allowance(account, zeonSaleAddress)
+  //       setAllow(data)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [usdtContract, zeonSaleAddress, account, fastRefresh])
+
   console.log('debug allowBN', allowBN?.toString())
   const mintBN = Math.pow(10, 6) * parseFloat(formattedAmounts[Field.INPUT])
   const [handleMint] = useMintCallback(mintBN.toString())
@@ -372,6 +389,7 @@ export default function Swap() {
 
   // check if user has gone through approval process, used to show two step buttons, reset on token change
   const [approvalSubmitted, setApprovalSubmitted] = useState<boolean>(false)
+  const [approvalCustomSubmitted, setApprovalCustomSubmitted] = useState<boolean>(false)
 
   // mark when a user has submitted an approval, reset onTokenSelection for input field
   useEffect(() => {
@@ -379,6 +397,14 @@ export default function Swap() {
       setApprovalSubmitted(true)
     }
   }, [approvalState, approvalSubmitted])
+
+
+  // mark when a user has submitted an approval, reset onTokenSelection for input field
+  useEffect(() => {
+    if (approvalStateCustom === ApprovalState.PENDING) {
+      setApprovalCustomSubmitted(true)
+    }
+  }, [approvalStateCustom, approvalCustomSubmitted])
 
   const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(
     () => maxAmountSpend(currencyBalances[Field.INPUT]),
@@ -466,6 +492,12 @@ export default function Swap() {
       approvalState === ApprovalState.PENDING ||
       (approvalSubmitted && approvalState === ApprovalState.APPROVED)) &&
     !(priceImpactSeverity > 3 && !isExpertMode)
+
+  const showApproveCustom = approvalStateCustom === ApprovalState.NOT_APPROVED ||
+    approvalStateCustom === ApprovalState.PENDING ||
+    (approvalCustomSubmitted && approvalStateCustom === ApprovalState.APPROVED)
+
+
 
   const handleConfirmDismiss = useCallback(() => {
     setSwapState({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
@@ -859,7 +891,7 @@ export default function Swap() {
                       )}
                       {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
                     </div>
-                  ) : !allowBN.gt(BigNumber.from(0)) ? (
+                  ) : !allowBN.gt(BigNumber.from('0')) ? (
                     <ButtonPrimary onClick={handleApproveCustom} > Approve USDT </ButtonPrimary>
                   ) : (
                     <ButtonPrimary onClick={handleMint} >Swap</ButtonPrimary>

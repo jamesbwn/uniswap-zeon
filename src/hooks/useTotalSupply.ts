@@ -74,11 +74,10 @@ export function useZeonRemain() {
 
 export function useUSDTAllowance() {
   const [allow, setAllow] = useState(BigNumber.from(0))
-  const { chainId, account} = useWeb3React()
-  const usdtAddress = USDT.address
+  const { account} = useWeb3React()
   const zeonSaleAddress = ZEON_SALE_ADDRESS_V1
-  const usdtContract = useTokenContract(usdtAddress, true);
-  const {slowRefresh}= useRefresh()
+  const usdtContract = useUsdtContract()
+  const {fastRefresh}= useRefresh()
   useEffect(() => {
     async function fetchData() {
       if(usdtContract && account) {
@@ -87,7 +86,9 @@ export function useUSDTAllowance() {
       }
     }
     fetchData()
-  }, [usdtContract, zeonSaleAddress, account, slowRefresh])
+    console.log('debug fast ref st2', fastRefresh)
+
+  }, [usdtContract, zeonSaleAddress, account, fastRefresh])
 
   return allow
 }

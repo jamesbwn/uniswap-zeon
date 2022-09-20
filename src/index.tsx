@@ -27,6 +27,7 @@ import TransactionUpdater from './state/transactions/updater'
 import UserUpdater from './state/user/updater'
 import ThemeProvider, { ThemedGlobalStyle } from './theme'
 import RadialGradientByChainUpdater from './theme/RadialGradientByChainUpdater'
+import { RefreshContextProvider } from 'contexts/RefreshContext'
 
 const queryClient = new QueryClient()
 
@@ -58,17 +59,19 @@ createRoot(container).render(
           <HashRouter>
             <LanguageProvider>
               <Web3Provider>
-                <RelayEnvironmentProvider environment={RelayEnvironment}>
-                  <Blocklist>
-                    <BlockNumberProvider>
-                      <Updaters />
-                      <ThemeProvider>
-                        <ThemedGlobalStyle />
-                        <App />
-                      </ThemeProvider>
-                    </BlockNumberProvider>
-                  </Blocklist>
-                </RelayEnvironmentProvider>
+                <RefreshContextProvider>
+                  <RelayEnvironmentProvider environment={RelayEnvironment}>
+                    <Blocklist>
+                      <BlockNumberProvider>
+                        <Updaters />
+                        <ThemeProvider>
+                          <ThemedGlobalStyle />
+                          <App />
+                        </ThemeProvider>
+                      </BlockNumberProvider>
+                    </Blocklist>
+                  </RelayEnvironmentProvider>
+                </RefreshContextProvider>
               </Web3Provider>
             </LanguageProvider>
           </HashRouter>

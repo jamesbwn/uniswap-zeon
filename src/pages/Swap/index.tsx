@@ -167,7 +167,7 @@ export default function Swap() {
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
 
   const rate = useZeonRate()?.div(1000);
-
+  console.log('debug rate', rate)
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
@@ -313,6 +313,7 @@ export default function Swap() {
   const remaining = useZeonRemain();
 
   const allowBN = useUSDTAllowance()
+  console.log('debug allowBN', allowBN?.toString())
   const mintBN = Math.pow(10, 6) * parseFloat(formattedAmounts[Field.INPUT])
   const [handleMint] = useMintCallback(mintBN.toString())
   // const [handleApproveUSDT] = useUSDTApproveCallback()

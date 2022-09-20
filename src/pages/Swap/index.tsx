@@ -168,7 +168,7 @@ export default function Swap() {
   const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
 
-  const rate = useZeonRate()?.div(1000);
+  const rate = useZeonRate()?.toNumber() / 1000;
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
@@ -684,7 +684,7 @@ export default function Swap() {
                   <BottomInputWrapper redesignFlag={redesignFlagEnabled}>
                     <Trace section={SectionName.CURRENCY_OUTPUT_PANEL}>
                       <SwapCurrencyInputPanel
-                        value={!isZeon ? formattedAmounts[Field.OUTPUT] : formattedAmounts[Field.INPUT] ? (parseFloat(formattedAmounts[Field.INPUT]) * rate.toNumber()).toString() : '0'}
+                        value={!isZeon ? formattedAmounts[Field.OUTPUT] : formattedAmounts[Field.INPUT] ? (parseFloat(formattedAmounts[Field.INPUT]) * rate).toString() : '0'}
                         onUserInput={handleTypeOutput}
                         label={
                           independentField === Field.INPUT && !showWrap ? (
